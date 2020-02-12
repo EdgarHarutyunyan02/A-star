@@ -41,25 +41,29 @@ class Cell {
 public:
 	int x, y;
 	char sym;
-	bool is_;
-	Cell *cameFrom;
+	bool isObstacle;
+	Cell* cameFrom;
 	float f; // Sum of g and h
 	float g; // Cost of step
 	float h; // Heuristic (Aproximate distance to goal)
 
+	void setState(bool state) {
+		isObstacle = state;
+		sym = isObstacle ? '*' : '.';
+	}
 
 	void calcF() { f = g + h; }
 	Cell() {
-		is_ = true;
+		setState(false); // false means its'nt an obstacle
 	};
 
-	Cell(int X, int Y, bool state = true) :x(X), y(Y), is_(state) { };
+	Cell(int X, int Y, bool state = false) :x(X), y(Y) {
+		setState(state);
+	};
 
 	void setPos(int X, int Y) {
 		x = X;
 		y = Y;
-		sym = '.';
-		is_ = true;
 	};
 
 	bool operator==(Cell obj) {
@@ -96,6 +100,12 @@ int main()
 		for (j = 0; j < WIDTH; j++) {
 			area[i][j].setPos(j, i);
 			area[i][j].g = 80;
+			if ((j == 5) && (i != 15) || ( j == 30) && (i == HEIGHT - 1)) {
+				area[i][j].setState(true);
+			}
+			else {
+				area[i][j].setState(false);
+			}
 		}
 
 	vector <Cell> openSet, closeSet;
@@ -123,6 +133,12 @@ int main()
 			if (openSet[minF].f > openSet[i].f) minF = i;
 
 		current = openSet[minF];
+		if (current.isObstacle) {
+			closeSet.push_back(current);
+			vector <Cell>::iterator iter = find(openSet.begin(), openSet.end(), current);
+			openSet.erase(iter);
+			continue;
+		}
 		path.push_back(current);
 
 		// cout << "Current Pos. X: " << current.x << " Y: " << current.y << endl;
@@ -146,10 +162,10 @@ int main()
 				neighbors[i].g = g_tmp;
 				neighbors[i].f = g_tmp + distance(neighbors[i], area[targetY][targetX]);
 
-				if ( find(openSet.begin(), openSet.end(), neighbors[i]) == openSet.end() )
+				if (find(openSet.begin(), openSet.end(), neighbors[i]) == openSet.end())
 					openSet.push_back(neighbors[i]);
 			}
-			
+
 		}
 
 		k++;
@@ -171,6 +187,7 @@ int main()
 			if (area[i][j].sym == 'S') SetColor(LightGreen, Black);
 			if (area[i][j].sym == 'F') SetColor(LightRed, Black);
 			if (area[i][j].sym == '.') SetColor(DarkGray, Black);
+			if (area[i][j].sym == '*') SetColor(Red, Black);
 			cout << area[i][j].sym;
 		}
 		cout << endl;
