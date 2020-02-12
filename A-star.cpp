@@ -117,7 +117,7 @@ int main()
 
 	Cell area[HEIGHT][WIDTH];
 
-	for (i = 0; i < HEIGHT; i++)		
+	for (i = 0; i < HEIGHT; i++)
 		for (j = 0; j < WIDTH; j++) {
 			area[i][j].setPos(j, i);
 			area[i][j].g = 80;
@@ -129,7 +129,7 @@ int main()
 				area[i][j].isLet = true;
 				area[i][j].sym = '.';
 			}
-			
+
 		}
 
 	vector <Cell> openSet, closeSet;
@@ -157,7 +157,7 @@ int main()
 			if (openSet[minF].f > openSet[i].f) minF = i;
 
 		current = openSet[minF];
-		path.push_back(current);
+		
 
 		// cout << "Current Pos. X: " << current.x << " Y: " << current.y << endl;
 
@@ -174,15 +174,21 @@ int main()
 
 		for (i = 0; i < neighbors.size(); i++)
 		{
+			if (find(path.begin(), path.end(), neighbors[i]) != path.end()) {
+				vector <Cell>::iterator iter1 = find(path.begin(), path.end(), neighbors[i]);
+				path.erase(iter1);
+			}
 			float g_tmp = current.g + 1;
 			if (g_tmp < neighbors[i].g && neighbors[i].isLet == true) {
 				
-				neighbors[i].cameFrom = &path[k];
+				neighbors[i].cameFrom = &current;
 				neighbors[i].g = g_tmp;
 				neighbors[i].f = g_tmp + distance(neighbors[i], area[targetY][targetX]);
 
-				if (find(openSet.begin(), openSet.end(), neighbors[i]) == openSet.end())
+				if (find(openSet.begin(), openSet.end(), neighbors[i]) == openSet.end()) {
 					openSet.push_back(neighbors[i]);
+					path.push_back(current);
+				}
 			}
 
 		}
